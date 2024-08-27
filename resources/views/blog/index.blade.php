@@ -1,8 +1,4 @@
 @extends('layouts.layout')
 
-@section('title', 'Página Inicial')
+@section('title', 'Pï¿½gina Inicial')
 
-@section('content')
-    <h1>Bem-vindo à Página Inicial!</h1>
-    <p>Conteúdo da página inicial vai aqui.</p>
-@endsection
