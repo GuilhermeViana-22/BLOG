@@ -8,6 +8,6 @@ class BlogController extends Controller
 {
     public function index()
     {
-        return view('blog.index'); // Certifique-se de que 'blog.index' corresponde ao caminho da view
+        return response()->json('deu good');
     }
 }
