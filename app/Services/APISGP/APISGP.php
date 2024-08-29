@@ -10,7 +10,8 @@ class APISGP
 
     public function __construct()
     {
-        $this->baseUrl = env('API_URL'); // Base URL da API
+        $this->baseUrl = rtrim(env('API_URL'), '/') . '/'; // Garante que a URL base termine com uma barra
+
     }
 
     /**

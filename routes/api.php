@@ -6,6 +6,7 @@ use App\Http\Controllers\BlogController;
 
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/verifycode', [AuthController::class, 'verifycode'])->name('verifycode');
 
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
