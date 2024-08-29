@@ -3,6 +3,9 @@
 namespace App\Services\APISGP;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Response;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Log;
 
 class APISGP
 {
@@ -10,8 +13,8 @@ class APISGP
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(env('API_URL'), '/') . '/'; // Garante que a URL base termine com uma barra
-
+        // Define a URL base garantindo que termine com uma barra
+        $this->baseUrl = rtrim(env('API_URL'), '/') . '/';
     }
 
     /**
@@ -21,9 +24,9 @@ class APISGP
      * @param array $params
      * @return \Illuminate\Http\Client\Response
      */
-    public function get(string $endpoint, array $params = [])
+    public function get(string $endpoint, array $params = []): Response
     {
-        return Http::get($this->baseUrl . $endpoint, $params);
+        return $this->sendRequest('get', $endpoint, $params);
     }
 
     /**
@@ -33,9 +36,9 @@ class APISGP
      * @param array $data
      * @return \Illuminate\Http\Client\Response
      */
-    public function post(string $endpoint, array $data = [])
+    public function post(string $endpoint, array $data = []): Response
     {
-        return Http::post($this->baseUrl . $endpoint, $data);
+        return $this->sendRequest('post', $endpoint, $data);
     }
 
     /**
@@ -45,9 +48,9 @@ class APISGP
      * @param array $data
      * @return \Illuminate\Http\Client\Response
      */
-    public function put(string $endpoint, array $data = [])
+    public function put(string $endpoint, array $data = []): Response
     {
-        return Http::put($this->baseUrl . $endpoint, $data);
+        return $this->sendRequest('put', $endpoint, $data);
     }
 
     /**
@@ -57,8 +60,36 @@ class APISGP
      * @param array $data
      * @return \Illuminate\Http\Client\Response
      */
-    public function delete(string $endpoint, array $data = [])
+    public function delete(string $endpoint, array $data = []): Response
     {
-        return Http::delete($this->baseUrl . $endpoint, $data);
+        return $this->sendRequest('delete', $endpoint, $data);
+    }
+
+    /**
+     * Constrói e envia a requisição para a API externa.
+     *
+     * @param string $method
+     * @param string $endpoint
+     * @param array $data
+     * @return \Illuminate\Http\Client\Response
+     */
+    protected function sendRequest(string $method, string $endpoint, array $data = []): Response
+    {
+        // Garante que o endpoint comece com uma barra, mas sem duplicar barras na URL final
+        $url = $this->baseUrl . ltrim($endpoint, '/');
+
+        Log::info("Sending {$method} request to {$url}", ['data' => $data]);
+
+        try {
+            $response = Http::{$method}($url, $data);
+            $response->throw(); // Lança exceções para códigos de status HTTP não 2xx
+
+            Log::info("Response received", ['body' => $response->body()]);
+            return $response;
+        } catch (RequestException $e) {
+            // Registra o erro e lança a exceção
+            Log::error("Request failed: {$e->getMessage()}", ['url' => $url, 'data' => $data]);
+            throw $e;
+        }
     }
 }

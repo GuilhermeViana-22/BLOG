@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Helpers\HttpHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VerifyCodeRequest;
 use App\Models\Token;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Http;
+use Mockery\Exception;
 
 
 class AuthController extends Controller
@@ -31,46 +33,37 @@ class AuthController extends Controller
         $userData = $request->validated();
 
         try {
-            $response = $this->apiSgp->post('/api/register', $userData);
+            $response = $this->apiSgp->post('/register', $userData);
 
             if ($response->successful()) {
                 return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
             }
             return response()->json(['message' => 'Erro ao tentar registrar usuário.'], HttpHelper::HTTP_FORBIDDEN);
         } catch (RequestException $e) {
-            return response()->json([
-                'message' => 'Erro ao comunicar com a API externa.',
-                'error' => $e->getMessage()
-            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['message' => 'Erro ao comunicar com a API externa.','error' => $e->getMessage()], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validated();
+        $response = $this->apiSgp->post('/login', $credentials);
 
-        $response = Http::post('https://apisgp.com/api/login', $credentials);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            $token = $data['token'];
-
-            // Armazenar o token no banco de dados
-            Token::updateOrCreate(
-                ['user_id' => $request->user_id], // ou qualquer identificação do usuário
-                ['token' => $token]
-            );
-
-            return response()->json([
-                'message' => 'Login bem-sucedido.',
-                'token' => $token
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'Credenciais inválidas.'
-            ], 401);
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Credenciais inválidas.'], HttpHelper::HTTP_NOT_FOUND);
         }
+
+        $data = $response->json();
+
+        $user_id = (int) $data['user_id'];
+        $token = $data['token'];
+
+        // Armazenar o token usando o método privado
+        $this->storeToken($user_id, $token);
+
+        return response()->json(['message' => 'Login bem-sucedido.'],HttpHelper::HTTP_CREATED);
     }
+
 
     /***
      * método para realizar a autorização via codificação recebida.
@@ -82,18 +75,16 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-
-            //esta linha precisa de correção
-            $response = Http::post('https://apisgp.com/api/verifycode', $userData);
+            $response = $this->apiSgp->post('/verifycode', $userData);
 
             if (!$response->successful()) {
                 DB::rollBack();
-                return response()->json(['message' => 'Erro ao verificar o código.'], HttpHelper::HTTP_FORBIDDEN);
+                return response()->json(['message' => 'Erro ao verificar o código, tente novamente.'], HttpHelper::HTTP_FORBIDDEN);
             }
 
-            $responseData = $response->json();
-            $userDataFromApi = $responseData['user'];
-            $token = $responseData['token'];
+            $data = $response->json();
+            $userDataFromApi = $data['user'];
+            $token = $data['token'];
 
             // Organiza e cria uma nova instância do modelo User
             $user = $this->organizeUserData($userDataFromApi, $token);
@@ -122,20 +113,54 @@ class AuthController extends Controller
     {
         // Cria uma nova instância do modelo User
         $user = new User();
-        $user->id = $userDataFromApi['id'];
+        $user->id =  (int)  $userDataFromApi['id'];
         $user->name = $userDataFromApi['name'];
         $user->email = $userDataFromApi['email'];
         $user->email_verified_at = $userDataFromApi['email_verified_at'];
         $user->remember_token = $token;
         //esta linha precisa de correção
-        $user->password = 'acd=1234';
-//        $user->situacao_id = $userDataFromApi['situacao_id'];
-//        $user->created_at = $userDataFromApi['created_at'];
-//        $user->active = $userDataFromApi['active'];
+        $user->password = $userDataFromApi['password'];
+        $user->situacao_id = (int) $userDataFromApi['situacao_id'];
+        $user->created_at = $userDataFromApi['created_at'];
+        $user->active =  (int)  $userDataFromApi['active'];
         $user->updated_at = $userDataFromApi['updated_at'];
+        $user->delete_at = $userDataFromApi['delete_at'];
 
 
         return $user;
+    }
+
+    /**
+     * Armazena ou atualiza o token no banco de dados.
+     *
+     * @param int $user_id
+     * @param string $token
+     * @return JsonResponse
+     */
+    private function storeToken(int $user_id, string $token)
+    {
+        try {
+            // Verifica se já existe um registro com o user_id
+            $existingToken = Token::where('user_id', $user_id)->first();
+
+            if ($existingToken) {
+                // Atualiza o token se o user_id já existir
+                $existingToken->token = $token;
+                $existingToken->save();
+            } else {
+                // Cria um novo registro se não existir
+                $newToken = new Token();
+                $newToken->user_id = $user_id;
+                $newToken->token = $token;
+                $newToken->save();
+            }
+
+            return response()->json(['message' => 'Token salvo com sucesso.']);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Não foi possível salvar o token. Verifique os dados e tente novamente. ' . $e->getMessage()
+            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

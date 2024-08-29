@@ -31,6 +31,9 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    //url da api
+
+    'api_url' => env('API_URL', 'https://apisgp.com/api'),
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

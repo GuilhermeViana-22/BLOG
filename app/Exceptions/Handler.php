@@ -37,35 +37,7 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            // Registrar exceções para análise
-            Log::error('Exceção capturada:', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-            ]);
-        });
 
-        $this->renderable(function (Throwable $e, $request) {
-            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-                // Exemplo: Retornar um erro 404 para recursos não encontrados
-                return response()->json([
-                    'error' => 'Recurso não encontrado'
-                ], Response::HTTP_NOT_FOUND);
-            }
-
-            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
-                // Exemplo: Retornar o erro HTTP com o código de status apropriado
-                return response()->json([
-                    'error' => 'Erro HTTP: ' . $e->getMessage()
-                ], $e->getStatusCode());
-            }
-
-            // Exemplo: Retornar um erro genérico para exceções não tratadas
-            return response()->json([
-                'error' => 'Ocorreu um erro interno no servidor'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        });
     }
 
     /**
