@@ -2,23 +2,29 @@
 
 namespace App\Http\Middleware;
 
+use App\Interfaces\AppRequestInterface;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Token; // Certifique-se de ter o modelo Token importado
+use Illuminate\Support\Facades\Auth;
 
 class ApiTokenMiddleware
 {
+
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-        $token = Cache::get('api_token'); // ou outro local de armazenamento
-
-        if ($token) {
-            $request->headers->set('Authorization', 'Bearer ' . $token);
+        if ($request instanceof AppRequestInterface) {
+            $authorizationHeader = $request->getAuthorizationHeader();
+            if ($authorizationHeader) {
+                $request->headers->set('Authorization', $authorizationHeader);
+            }
         }
 
         return $next($request);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Helpers\HttpHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\MeRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VerifyCodeRequest;
 use App\Models\Token;
@@ -28,6 +29,11 @@ class AuthController extends Controller
         $this->apiSgp = $apiSgp;
     }
 
+    /***
+     * método para realizar o registro de novos usuários dentro da aplicação
+     * @param RegisterRequest $request
+     * @return JsonResponse
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $userData = $request->validated();
@@ -44,6 +50,11 @@ class AuthController extends Controller
         }
     }
 
+    /***
+     * Método para relizar o login dentro da aplicação
+     * @param LoginRequest $request
+     * @return JsonResponse
+     */
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
@@ -54,7 +65,6 @@ class AuthController extends Controller
         }
 
         $data = $response->json();
-
         $user_id = (int) $data['user_id'];
         $token = $data['token'];
 
@@ -62,6 +72,22 @@ class AuthController extends Controller
         $this->storeToken($user_id, $token);
 
         return response()->json(['message' => 'Login bem-sucedido.'],HttpHelper::HTTP_CREATED);
+    }
+
+    /***
+     * @param MeRequest $request
+     * @return JsonResponse
+     */
+    public function me(MeRequest $request)
+    {
+        $user_id = $request->validated()['user_id'];
+        $response = $this->apiSgp->get('/me', ['user_id' => $user_id]);
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Não foi possível encontrar o usuário solicitado, tente novamente.'], HttpHelper::HTTP_NOT_FOUND);
+        }
+
+        return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
     }
 
 
@@ -132,7 +158,6 @@ class AuthController extends Controller
 
     /**
      * Armazena ou atualiza o token no banco de dados.
-     *
      * @param int $user_id
      * @param string $token
      * @return JsonResponse
