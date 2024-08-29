@@ -17,17 +17,20 @@ class APISGP
         $this->baseUrl = rtrim(env('API_URL'), '/') . '/';
     }
 
+
     /**
      * Envia uma requisição GET para a API externa.
      *
      * @param string $endpoint
      * @param array $params
+     * @param array $headers
      * @return \Illuminate\Http\Client\Response
      */
-    public function get(string $endpoint, array $params = []): Response
+    public function get(string $endpoint, array $params = [], array $headers = []): Response
     {
-        return $this->sendRequest('get', $endpoint, $params);
+        return $this->sendRequest('get', $endpoint, $params, $headers);
     }
+
 
     /**
      * Envia uma requisição POST para a API externa.
@@ -71,18 +74,18 @@ class APISGP
      * @param string $method
      * @param string $endpoint
      * @param array $data
+     * @param array $headers
      * @return \Illuminate\Http\Client\Response
      */
-    protected function sendRequest(string $method, string $endpoint, array $data = []): Response
+    protected function sendRequest(string $method, string $endpoint, array $data = [], array $headers = []): Response
     {
         // Garante que o endpoint comece com uma barra, mas sem duplicar barras na URL final
         $url = $this->baseUrl . ltrim($endpoint, '/');
 
-        Log::info("Sending {$method} request to {$url}", ['data' => $data]);
+        Log::info("Sending {$method} request to {$url}", ['data' => $data, 'headers' => $headers]);
 
         try {
-            $response = Http::{$method}($url, $data);
-            $response->throw(); // Lança exceções para códigos de status HTTP não 2xx
+            $response = Http::withHeaders($headers)->{$method}($url, $data);
 
             Log::info("Response received", ['body' => $response->body()]);
             return $response;
@@ -93,5 +96,5 @@ class APISGP
         }
     }
 
-
 }
+

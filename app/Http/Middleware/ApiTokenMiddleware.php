@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Interfaces\AppRequestInterface;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\Token; // Certifique-se de ter o modelo Token importado
@@ -10,21 +9,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ApiTokenMiddleware
 {
-
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request instanceof AppRequestInterface) {
-            $authorizationHeader = $request->getAuthorizationHeader();
-            if ($authorizationHeader) {
-                $request->headers->set('Authorization', $authorizationHeader);
+        // Supondo que você está recuperando o token do banco de dados
+        $user = Auth::user();
+        if ($user) {
+            $tokenRecord = Token::where('user_id', $user->id)->first();
+            if ($tokenRecord) {
+                $token = $tokenRecord->token;
+                $request->headers->set('Authorization', 'Bearer ' . $token);
+            } else {
+                // Se não houver token, você pode optar por retornar um erro ou outro tratamento
+                return response()->json(['error' => 'Token não encontrado.'], 401);
             }
+        } else {
+            // Se não houver um usuário autenticado
+            return response()->json(['error' => 'Usuário não autenticado.'], 401);
         }
 
         return $next($request);

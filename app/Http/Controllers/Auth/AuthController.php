@@ -80,15 +80,35 @@ class AuthController extends Controller
      */
     public function me(MeRequest $request)
     {
-        $user_id = $request->validated()['user_id'];
-        $response = $this->apiSgp->get('/me', ['user_id' => $user_id]);
+        // Obtém o ID do usuário da solicitação
+        $user_id = $request->get('id', 1); // Usa o ID 1 como padrão se não for fornecido
 
-        if (!$response->successful()) {
-            return response()->json(['message' => 'Não foi possível encontrar o usuário solicitado, tente novamente.'], HttpHelper::HTTP_NOT_FOUND);
+        // Busca o token associado ao user_id
+        $token = Token::where('user_id', $user_id)->first();
+
+        if (!$token) {
+            // Retorna um erro se o token não for encontrado
+            return response()->json(['error' => 'Token não encontrado para o usuário.'], HttpHelper::HTTP_NOT_FOUND);
         }
 
-        return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
+        // Configura o token de autorização Bearer
+        $bearerToken = 'Bearer ' . $token->token;
+
+        // Faz a requisição GET para o endpoint /me usando o APISGP
+        $response = $this->apiSgp->get('me', [
+            'id' => $user_id
+        ], [
+            'Authorization' => $bearerToken,
+        ]);
+
+        // Verifica se a resposta foi bem-sucedida
+        if ($response->successful()) {
+            return response()->json($response->json(), HttpHelper::HTTP_OK);
+        } else {
+            return response()->json(['error' => 'Não foi possível encontrar o usuário solicitado, tente novamente.'], HttpHelper::HTTP_NOT_FOUND);
+        }
     }
+
 
 
     /***
