@@ -6,10 +6,12 @@ use App\Helpers\HttpHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VerifyCodeRequest;
+use App\Models\Token;
 use App\Models\User;
 use App\Services\APISGP\APISGP;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Http;
@@ -43,6 +45,33 @@ class AuthController extends Controller
         }
     }
 
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        $response = Http::post('https://apisgp.com/api/login', $credentials);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            $token = $data['token'];
+
+            // Armazenar o token no banco de dados
+            Token::updateOrCreate(
+                ['user_id' => $request->user_id], // ou qualquer identificação do usuário
+                ['token' => $token]
+            );
+
+            return response()->json([
+                'message' => 'Login bem-sucedido.',
+                'token' => $token
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Credenciais inválidas.'
+            ], 401);
+        }
+    }
+
     /***
      * método para realizar a autorização via codificação recebida.
      */
@@ -54,7 +83,7 @@ class AuthController extends Controller
 
         try {
 
-
+            //esta linha precisa de correção
             $response = Http::post('https://apisgp.com/api/verifycode', $userData);
 
             if (!$response->successful()) {
@@ -98,6 +127,7 @@ class AuthController extends Controller
         $user->email = $userDataFromApi['email'];
         $user->email_verified_at = $userDataFromApi['email_verified_at'];
         $user->remember_token = $token;
+        //esta linha precisa de correção
         $user->password = 'acd=1234';
 //        $user->situacao_id = $userDataFromApi['situacao_id'];
 //        $user->created_at = $userDataFromApi['created_at'];
