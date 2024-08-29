@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostStoreRequest;
+use App\Models\Post;
+use Illuminate\Http\JsonResponse;
+use Mockery\Exception;
 use App\Helpers\HttpHelper;
 use Illuminate\Http\Request;
-use App\Models\Post;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
-use Mockery\Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 class BlogController extends Controller
 {
@@ -24,10 +26,9 @@ class BlogController extends Controller
     /***
      * M�todo para realizar a cria��o de novos posts para o blod
      */
-    public function store(Request $request)
+    public function store(PostStoreRequest $request): JsonResponse
     {
-        //dd($request->all()); // Adicione esta linha para verificar o conteúdo da requisição
-        // Pega os dados validados do request
+
         $data = $request->validated();
         $post = new Post();
 
@@ -37,17 +38,16 @@ class BlogController extends Controller
         try {
             $post->save();
             DB::commit();
-            return response()->json(['success' => 'O post foi salvo com sucesso'], HttpHelper::HTTP_OK);
+            return response()->json(['success' => 'Post salvo com sucesso!'], 200);
         } catch (QueryException $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Erro ao tentar salvar o post: ' . $e->getMessage()], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
-        } catch (Exception $e) {
+            return response()->json(['error' => 'Erro ao tentar salvar o post: ' . $e->getMessage()], 500);
+        } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar salvar o post. Por favor, tente novamente mais tarde.'], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['error' => 'Ocorreu um erro ao tentar salvar o post. Por favor, tente novamente mais tarde.'], 500);
         }
     }
-
 
 }
