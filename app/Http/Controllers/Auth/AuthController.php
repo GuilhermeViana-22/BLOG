@@ -14,6 +14,7 @@ use App\Services\APISGP\APISGP;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Http;
@@ -50,8 +51,8 @@ class AuthController extends Controller
         }
     }
 
-    /***
-     * Método para relizar o login dentro da aplicação
+    /**
+     * Método para realizar o login dentro da aplicação
      * @param LoginRequest $request
      * @return JsonResponse
      */
@@ -68,10 +69,13 @@ class AuthController extends Controller
         $user_id = (int) $data['user_id'];
         $token = $data['token'];
 
-        // Armazenar o token usando o método privado
-        $this->storeToken($user_id, $token);
+        // Armazenar o token e o user_id na sessão
+        session([
+            'user_id' => $user_id,
+            'token' => $token
+        ]);
 
-        return response()->json(['message' => 'Login bem-sucedido.'],HttpHelper::HTTP_CREATED);
+        return response()->json(['message' => 'Login bem-sucedido.'], HttpHelper::HTTP_CREATED);
     }
 
     /***
@@ -80,36 +84,25 @@ class AuthController extends Controller
      */
     public function me(MeRequest $request)
     {
-        // Obtém o ID do usuário da solicitação
-        $user_id = $request->get('id', 1); // Usa o ID 1 como padrão se não for fornecido
+        $user_id = $request->get('id', 1);
 
-        // Busca o token associado ao user_id
         $token = Token::where('user_id', $user_id)->first();
 
         if (!$token) {
-            // Retorna um erro se o token não for encontrado
             return response()->json(['error' => 'Token não encontrado para o usuário.'], HttpHelper::HTTP_NOT_FOUND);
         }
 
-        // Configura o token de autorização Bearer
         $bearerToken = 'Bearer ' . $token->token;
 
         // Faz a requisição GET para o endpoint /me usando o APISGP
-        $response = $this->apiSgp->get('me', [
-            'id' => $user_id
-        ], [
-            'Authorization' => $bearerToken,
-        ]);
+        $response = $this->apiSgp->get('me', ['id' => $user_id], ['Authorization' => $bearerToken, ]);
 
-        // Verifica se a resposta foi bem-sucedida
         if ($response->successful()) {
             return response()->json($response->json(), HttpHelper::HTTP_OK);
         } else {
             return response()->json(['error' => 'Não foi possível encontrar o usuário solicitado, tente novamente.'], HttpHelper::HTTP_NOT_FOUND);
         }
     }
-
-
 
     /***
      * método para realizar a autorização via codificação recebida.
@@ -207,5 +200,39 @@ class AuthController extends Controller
             ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Método para realizar o logout da aplicação
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function logout(Request $request)
+    {
+        // Recupera o user_id e o token da sessão
+        $user_id = session('user_id');
+        $token = session('token');
+
+        if (!$user_id || !$token) {
+            return response()->json(['message' => 'Usuário não autenticado.'], HttpHelper::HTTP_UNAUTHORIZED);
+        }
+
+        // Localiza o token associado ao usuário no banco de dados
+        $tokenRecord = Token::where('user_id', $user_id)
+            ->where('token', $token)
+            ->first();
+
+        if ($tokenRecord) {
+            // Revoga o token (exclui o registro do token)
+            $tokenRecord->delete();
+
+            // Limpa os dados da sessão
+            session()->forget(['user_id', 'token']);
+
+            return response()->json(['message' => 'Logout realizado com sucesso.'], HttpHelper::HTTP_OK);
+        } else {
+            return response()->json(['message' => 'Token não encontrado.'], HttpHelper::HTTP_NOT_FOUND);
+        }
+    }
+
 
 }

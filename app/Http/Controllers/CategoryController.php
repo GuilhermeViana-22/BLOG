@@ -2,65 +2,98 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCategoryRequest;
-use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Atualiza uma categoria existente.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'relevant' => 'nullable|boolean',
+            'published' => 'nullable|date',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $category = Category::findOrFail($id);
+        $category->update($request->all());
+
+        return response()->json([
+            'message' => 'Categoria atualizada com sucesso!',
+            'category' => $category
+        ], Response::HTTP_OK);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Armazena uma nova categoria.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'relevant' => 'nullable|boolean',
+            'published' => 'nullable|date',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $category = Category::create($request->all());
+
+        return response()->json([
+            'message' => 'Categoria criada com sucesso!',
+            'category' => $category
+        ], Response::HTTP_CREATED);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Remove uma categoria.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreCategoryRequest $request)
+    public function destroy($id)
     {
-        //
+        $category = Category::findOrFail($id);
+        $category->delete();
+
+        return response()->json([
+            'message' => 'Categoria excluída com sucesso!'
+        ], Response::HTTP_OK);
     }
 
     /**
-     * Display the specified resource.
+     * Atualiza o contador de relevância.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show(Category $category)
+    public function incrementRelevant()
     {
-        //
-    }
+        $category = Category::orderBy('relevant', 'desc')->first(); // Obtém a categoria com o maior valor de relevância
+        if ($category) {
+            $category->increment('relevant');
+            return response()->json([
+                'message' => 'Relevância atualizada com sucesso!',
+                'relevant' => $category->relevant
+            ], Response::HTTP_OK);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCategoryRequest $request, Category $category)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Category $category)
-    {
-        //
+        return response()->json([
+            'message' => 'Nenhuma categoria encontrada para atualizar a relevância.'
+        ], Response::HTTP_NOT_FOUND);
     }
 }
