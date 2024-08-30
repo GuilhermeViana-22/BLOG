@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\HttpHelper;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class CategoryController extends Controller
 {
+
+    public function index()
+    {
+        $categories = Category::all();
+        return response()->json($categories, HttpHelper::HTTP_OK);
+    }
+
+
     /**
      * Atualiza uma categoria existente.
      *
