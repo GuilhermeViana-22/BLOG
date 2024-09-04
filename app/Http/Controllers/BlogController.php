@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PostStoreRequest;
-use App\Models\Post;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
+use App\Models\Activity;
+use App\Models\Post;
 
 class BlogController extends Controller
 {
@@ -27,19 +27,28 @@ class BlogController extends Controller
     public function store(PostStoreRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $post = new Post();
 
         DB::beginTransaction();
-        $post->fill($data);
 
         try {
-            $post->save();
+            // Cria o novo post
+            $post = Post::create($data);
+
+            // Cria a atividade
+            Activity::create([
+                'user_id' => $request->user()->id, // Obtém o ID do usuário autenticado
+                'action' => 'Criou um novo post',
+                'category' => $post->category->name, // ou a categoria associada ao post
+            ]);
+
+            // Commit da transação
             DB::commit();
+
             return response()->json(['success' => 'Post salvo com sucesso!'], 200);
         } catch (QueryException $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Erro ao tentar salvar o post: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao tentar salvar o post.'], 500);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
