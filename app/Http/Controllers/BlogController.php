@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\HttpHelper;
 use App\Http\Requests\PostStoreRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
@@ -17,9 +18,46 @@ class BlogController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        // Capturar os parâmetros da requisição
+        $id = request()->query('id');
+        $title = request()->query('title');
+        $subtitle = request()->query('subtitle');
+        $categoryId = request()->query('category_id');
+        $createdAt = request()->query('created_at');
+
+        // Iniciar a consulta
+        $query = Post::query();
+
+        if ($id) {
+            $query->where('id', $id);
+        }
+
+
+        // Aplicar filtros condicionais
+        if ($title) {
+            $query->where('title', 'LIKE', '%' . $title . '%');
+        }
+
+        if ($subtitle) {
+            $query->where('subtitle', 'LIKE', '%' . $subtitle . '%');
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($createdAt) {
+            // Supondo que created_at seja uma data no formato 'Y-m-d'
+            $query->whereDate('created_at', $createdAt);
+        }
+
+        // Obter os posts filtrados
+        $posts = $query->get();
+
+        // Retornar a resposta JSON
         return response()->json(['posts' => $posts]);
     }
+
 
     /**
      * Método para realizar a criação de novos posts para o blog.
@@ -34,17 +72,20 @@ class BlogController extends Controller
             // Cria o novo post
             $post = Post::create($data);
 
+            // Carrega a categoria associada ao post, se necessário
+            $categoryName = $post->category ? $post->category->name : 'Categoria não encontrada';
+
             // Cria a atividade
             Activity::create([
                 'user_id' => $request->user()->id, // Obtém o ID do usuário autenticado
                 'action' => 'Criou um novo post',
-                'category' => $post->category->name, // ou a categoria associada ao post
+                'category' => $categoryName, // ou a categoria associada ao post
             ]);
 
             // Commit da transação
             DB::commit();
 
-            return response()->json(['success' => 'Post salvo com sucesso!'], 200);
+            return response()->json(['success' => 'Post salvo com sucesso!'], HttpHelper::HTTP_CREATED); // Código 201 para criação bem-sucedida
         } catch (QueryException $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
@@ -52,9 +93,10 @@ class BlogController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar salvar o post. Por favor, tente novamente mais tarde.'], 500);
+            return response()->json(['error' => 'Ocorreu um erro ao tentar salvar o post. Por favor, tente novamente mais tarde.'], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
 
     /**
      * Método para exibir um post específico.
@@ -93,16 +135,30 @@ class BlogController extends Controller
         $data = $request->validated();
 
         try {
+            // Encontra o post ou lança uma exceção se não encontrado
             $post = Post::findOrFail($id);
+
+            // Atualiza os campos do post com os dados validados
             $post->fill($data);
             $post->save();
+
+            // Carregar a categoria associada ao post, se necessário
+            $categoryName = $post->category ? $post->category->name : 'Categoria não encontrada';
+
+            // Opcional: criar uma atividade para registrar a atualização
+            Activity::create([
+                'user_id' => $request->user()->id, // Obtém o ID do usuário autenticado
+                'action' => 'Atualizou um post',
+                'category' => $categoryName, // ou a categoria associada ao post
+            ]);
+
             return response()->json(['success' => 'Post atualizado com sucesso!'], 200);
         } catch (QueryException $e) {
             Log::error('Erro ao atualizar o post: ' . $e->getMessage());
             return response()->json(['error' => 'Erro ao tentar atualizar o post.'], 500);
         } catch (\Exception $e) {
             Log::error('Erro ao atualizar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar atualizar o post.'], 500);
+            return response()->json(['error' => 'Ocorreu um erro ao tentar atualizar o post. Por favor, tente novamente mais tarde.'], 500);
         }
     }
 
@@ -111,16 +167,35 @@ class BlogController extends Controller
      */
     public function destroy($id): JsonResponse
     {
+        DB::beginTransaction();
+
         try {
+            // Encontra o post ou lança uma exceção se não encontrado
             $post = Post::findOrFail($id);
+
+            // Deleta o post
             $post->delete();
+
+            // Cria uma atividade para registrar a deleção
+            Activity::create([
+                'user_id' => request()->user()->id, // Obtém o ID do usuário autenticado
+                'action' => 'Deletou um post',
+                'category' => $post->category ? $post->category->name : 'Categoria não encontrada',
+            ]);
+
+            // Commit da transação
+            DB::commit();
+
             return response()->json(['success' => 'Post deletado com sucesso!'], 200);
         } catch (QueryException $e) {
+            DB::rollBack();
             Log::error('Erro ao deletar o post: ' . $e->getMessage());
             return response()->json(['error' => 'Erro ao tentar deletar o post.'], 500);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Erro ao deletar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar deletar o post.'], 500);
+            return response()->json(['error' => 'Ocorreu um erro ao tentar deletar o post. Por favor, tente novamente mais tarde.'], 500);
         }
     }
+
 }

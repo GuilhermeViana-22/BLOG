@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('sutitile')->nullable();
-            $table->text('body');
+            $table->string('subtitle')->nullable();
+            $table->string('body');
             $table->string('footer')->nullable();
             $table->string('links')->nullable();
             $table->string('tags_id'); // #por exemplo : #php, #aravel
-            $table->string('comment');
+            $table->integer('comment_id');
             $table->string('image_url')->nullable();
             $table->integer('user_id');
             $table->integer('category_id');
