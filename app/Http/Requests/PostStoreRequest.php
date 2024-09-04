@@ -30,12 +30,12 @@ class PostStoreRequest extends FormRequest
             'footer' => 'nullable|string',
             'links' => 'nullable|string',
             'tags_id' => 'nullable|string', // Se for uma lista de IDs separados por vírgulas
-            'comment' => 'required|string',
+            'comment_id' => 'nullable',
             'image_url' => 'nullable|url', // Valida a URL da imagem
             'user_id' => 'required|integer|exists:users,id',
             'category_id' => 'required|integer|exists:categories,id',
-            'type_id' => 'required|integer|exists:types,id', // Supondo que tenha uma tabela types
-            'can_be_commented' => 'required|boolean',
+            'type_id' => 'nullable|integer|exists:types,id', // Supondo que tenha uma tabela types
+            'can_be_commented' => 'nullable|boolean',
             'published' => 'required|date',
             'created_at' => 'nullable|date', // Se não precisar validar, pode remover
             'updated_at' => 'nullable|date', // Se não precisar validar, pode remover
@@ -66,8 +66,6 @@ class PostStoreRequest extends FormRequest
 
             'tags_id.string' => 'Os IDs das tags devem ser uma string.',
 
-            'comment.required' => 'O comentário é obrigatório.',
-            'comment.string' => 'O comentário deve ser uma string.',
 
             'image_url.url' => 'A URL da imagem deve ser uma URL válida.',
 
