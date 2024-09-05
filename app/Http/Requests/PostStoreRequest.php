@@ -7,16 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 class PostStoreRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize(): bool
-    {
-        return true; // Certifique-se de que o usuário tem permissão para criar posts
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array|string>
@@ -30,7 +20,6 @@ class PostStoreRequest extends FormRequest
             'footer' => 'nullable|string',
             'links' => 'nullable|string',
             'tags_id' => 'required|string', // Se for uma lista de IDs separados por vírgulas
-            'comment_id' => 'nullable',
             'image_url' => 'nullable|url', // Valida a URL da imagem
             'user_id' => 'required|integer',
             'category_id' => 'required|integer',

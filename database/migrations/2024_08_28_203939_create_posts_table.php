@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('subtitle')->nullable();
-            $table->string('body');
+            $table->longText('body');
             $table->string('footer')->nullable();
             $table->string('links')->nullable();
             $table->string('tags_id'); // #por exemplo : #php, #aravel

@@ -32,7 +32,6 @@ class BlogController extends Controller
             $query->where('id', $id);
         }
 
-
         // Aplicar filtros condicionais
         if ($title) {
             $query->where('title', 'LIKE', '%' . $title . '%');
@@ -77,7 +76,7 @@ class BlogController extends Controller
 
             // Cria a atividade
             Activity::create([
-                'user_id' => $request->user()->id, // Obtém o ID do usuário autenticado
+                'user_id' => $request->get('user_id'), // Obtém o ID do usuário autenticado
                 'action' => 'Criou um novo post',
                 'category' => $categoryName, // ou a categoria associada ao post
             ]);
