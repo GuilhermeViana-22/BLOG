@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\TagsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
 
@@ -42,8 +43,7 @@ Route::prefix('categories')->name('categories.')->group(function () {
     });
 });
 
-
-
-
+//
+Route::post('/tags', [TagsController::class, 'store']);
 
 
