@@ -191,10 +191,8 @@ class BlogController extends Controller
                 'action' => 'Deletou um post',
                 'category' => $post->category ? $post->category->name : 'Categoria não encontrada',
             ]);
-
             // Commit da transação
             DB::commit();
-
             return response()->json(['success' => 'Post deletado com sucesso!'], 200);
         } catch (QueryException $e) {
             DB::rollBack();
