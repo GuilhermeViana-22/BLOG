@@ -68,7 +68,6 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         // Outros middlewares
-        'api.token' => \App\Http\Middleware\ApiTokenMiddleware::class,
         'validate.token' => \App\Http\Middleware\ValidateApiToken::class,
     ];
 }

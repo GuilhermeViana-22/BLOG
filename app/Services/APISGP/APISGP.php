@@ -86,10 +86,10 @@ class APISGP
 
         try {
             $response = Http::withHeaders($headers)->{$method}($url, $data);
-
             Log::info("Response received", ['body' => $response->body()]);
             return $response;
         } catch (RequestException $e) {
+
             // Registra o erro e lança a exceção
             Log::error("Request failed: {$e->getMessage()}", ['url' => $url, 'data' => $data]);
             throw $e;

@@ -30,16 +30,15 @@ Route::prefix('blog')->name('blog.')->group(function () {
 
 
 
-Route::prefix('cotegories')->name('categories.')->group(function (){
-    //aqui ficaram as rotas publicas
-    Route::get('/', [CategoryController::class, 'index'])->name('categories.index');
-
-    //rotas privadas que precisam de alterações com token
+Route::prefix('categories')->name('categories.')->group(function () {
+    //rotas publicas
+    Route::get('/', [CategoryController::class, 'index'])->name('index');
+    //rotas protegidas
     Route::middleware(ValidateApiToken::class)->group(function () {
-        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-        Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-        Route::post('/categories/increment-relevant', [CategoryController::class, 'incrementRelevant'])->name('categories.incrementRelevant');
+        Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::put('/{id}', [CategoryController::class, 'update'])->name('update');
+        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+        Route::post('/increment-relevant', [CategoryController::class, 'incrementRelevant'])->name('incrementRelevant');
     });
 });
 
