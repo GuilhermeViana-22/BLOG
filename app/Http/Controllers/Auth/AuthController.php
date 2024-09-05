@@ -67,16 +67,42 @@ class AuthController extends Controller
 
         $data = $response->json();
         $user_id = (int) $data['user_id'];
-        $token = $data['token'];
+        $tokenStr = $data['token'];
 
         // Armazenar o token e o user_id na sessão
         session([
             'user_id' => $user_id,
-            'token' => $token
+            'token' => $tokenStr
         ]);
 
-        return response()->json(['message' => 'Login bem-sucedido.'], HttpHelper::HTTP_CREATED);
+        try {
+            // Verifica se já existe um token para o user_id
+            $token = Token::where('user_id', $user_id)->first();
+
+            if ($token) {
+                // Se o token já existe, apenas atualiza o valor do token
+                $token->token = $tokenStr;
+                $token->updated_at = now(); // Atualiza a data de modificação
+            } else {
+                // Se o token não existe, cria um novo registro
+                $token = new Token();
+                $token->user_id = $user_id;
+                $token->token = $tokenStr;
+            }
+
+            $token->save(); // Salva as alterações (inserção ou atualização)
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro entre a comunicação da API e o blog.'], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json([
+            'message' => 'Login bem-sucedido.',
+            'token' => $tokenStr,
+            'user_id' => $user_id,
+        ], HttpHelper::HTTP_CREATED);
     }
+
+
 
     /***
      * @param MeRequest $request

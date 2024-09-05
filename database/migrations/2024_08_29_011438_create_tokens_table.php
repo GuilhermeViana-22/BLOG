@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id')->unique(); // ID do usuário associado ao token
+            $table->string('user_id'); // ID do usuário associado ao token
             $table->text('token');
             $table->timestamps();
         });
