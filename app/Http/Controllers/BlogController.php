@@ -89,11 +89,17 @@ class BlogController extends Controller
         } catch (QueryException $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Erro ao tentar salvar o post.'], 500);
+            return response()->json([
+                'message' => 'Erro ao tentar salvar o post.',
+                'error' => $e->getMessage(),
+            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao salvar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar salvar o post. Por favor, tente novamente mais tarde.'], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json([
+                'message' => 'Erro ao tentar salvar o post.',
+                'error' => $e->getMessage(),
+            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

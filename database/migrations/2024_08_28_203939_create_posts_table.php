@@ -19,12 +19,11 @@ return new class extends Migration
             $table->string('footer')->nullable();
             $table->string('links')->nullable();
             $table->string('tags_id'); // #por exemplo : #php, #aravel
-            $table->integer('comment_id');
             $table->string('image_url')->nullable();
             $table->integer('user_id');
             $table->integer('category_id');
             $table->integer('type_id');
-            $table->boolean('can_be_commented');
+            $table->boolean('can_be_commented')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

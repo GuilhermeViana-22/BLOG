@@ -29,14 +29,13 @@ class PostStoreRequest extends FormRequest
             'body' => 'required|string',
             'footer' => 'nullable|string',
             'links' => 'nullable|string',
-            'tags_id' => 'nullable|string', // Se for uma lista de IDs separados por vírgulas
+            'tags_id' => 'required|string', // Se for uma lista de IDs separados por vírgulas
             'comment_id' => 'nullable',
             'image_url' => 'nullable|url', // Valida a URL da imagem
-            'user_id' => 'required|integer|exists:users,id',
-            'category_id' => 'required|integer|exists:categories,id',
-            'type_id' => 'nullable|integer|exists:types,id', // Supondo que tenha uma tabela types
+            'user_id' => 'required|integer',
+            'category_id' => 'required|integer',
+            'type_id' => 'required|integer', // Supondo que tenha uma tabela types
             'can_be_commented' => 'nullable|boolean',
-            'published' => 'required|date',
             'created_at' => 'nullable|date', // Se não precisar validar, pode remover
             'updated_at' => 'nullable|date', // Se não precisar validar, pode remover
         ];
