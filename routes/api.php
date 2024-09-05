@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Middleware\ValidateApiToken;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TagsController;
@@ -13,9 +13,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/me', [AuthController::class, 'me'])->name('me');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
-use App\Http\Middleware\ValidateApiToken;
-
 Route::prefix('blog')->name('blog.')->group(function () {
     // Listar todos os posts (não protegido pelo middleware)
     Route::get('/', [BlogController::class, 'index'])->name('index');
@@ -23,13 +20,11 @@ Route::prefix('blog')->name('blog.')->group(function () {
 
     // Aplicar o middleware para as outras rotas
     Route::middleware(ValidateApiToken::class)->group(function () {
+        Route::delete('/delete', [BlogController::class, 'delete'])->name('delete');
         Route::post('/', [BlogController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [BlogController::class, 'edit'])->name('edit');
-        Route::delete('/{id}', [BlogController::class, 'destroy'])->name('destroy');
     });
 });
-
-
 
 Route::prefix('categories')->name('categories.')->group(function () {
     //rotas publicas

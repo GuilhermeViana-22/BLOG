@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\HttpHelper;
+use App\Http\Requests\DeletePostRequest;
 use App\Http\Requests\PostStoreRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
@@ -150,12 +151,14 @@ class BlogController extends Controller
             // Carregar a categoria associada ao post, se necessário
             $categoryName = $post->category ? $post->category->name : 'Categoria não encontrada';
 
-            // Opcional: criar uma atividade para registrar a atualização
+
+            // Cria a atividade
             Activity::create([
-                'user_id' => $request->user()->id, // Obtém o ID do usuário autenticado
+                'user_id' => $request->get('user_id'), // Obtém o ID do usuário autenticado
                 'action' => 'Atualizou um post',
                 'category' => $categoryName, // ou a categoria associada ao post
             ]);
+
 
             return response()->json(['success' => 'Post atualizado com sucesso!'], 200);
         } catch (QueryException $e) {
@@ -170,20 +173,21 @@ class BlogController extends Controller
     /**
      * Método para deletar um post existente.
      */
-    public function destroy($id): JsonResponse
+    public function delete(DeletePostRequest $request)
     {
+
         DB::beginTransaction();
 
         try {
             // Encontra o post ou lança uma exceção se não encontrado
-            $post = Post::findOrFail($id);
+            $post = Post::findOrFail($request->get('id'));
 
             // Deleta o post
             $post->delete();
 
-            // Cria uma atividade para registrar a deleção
+            // Cria a atividade
             Activity::create([
-                'user_id' => request()->user()->id, // Obtém o ID do usuário autenticado
+                'user_id' => $request->get('user_id'), // Obtém o ID do usuário autenticado
                 'action' => 'Deletou um post',
                 'category' => $post->category ? $post->category->name : 'Categoria não encontrada',
             ]);
@@ -195,11 +199,17 @@ class BlogController extends Controller
         } catch (QueryException $e) {
             DB::rollBack();
             Log::error('Erro ao deletar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Erro ao tentar deletar o post.'], 500);
+            return response()->json([
+                'message' => 'Erro ao tentar deletar o post.',
+                'error' => $e->getMessage(),
+            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao deletar o post: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocorreu um erro ao tentar deletar o post. Por favor, tente novamente mais tarde.'], 500);
+            return response()->json([
+                'message' => 'Erro ao tentar deletar o post.',
+                'error' => $e->getMessage(),
+            ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
