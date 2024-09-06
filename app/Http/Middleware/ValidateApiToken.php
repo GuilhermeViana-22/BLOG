@@ -49,7 +49,7 @@ class ValidateApiToken
 
         try {
             // Faz a requisição POST e envia o corpo JSON
-            $response = $this->apiSgp->get('/teste', $data);
+            $response = $this->apiSgp->get('/autorizar', $data);
 
             // Verifica a resposta
             if (!$response->successful()) {
