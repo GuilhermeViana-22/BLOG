@@ -16,15 +16,14 @@ Route::get('/teste', [AuthController::class, 'teste'])->name('teste');
 
 
 Route::prefix('blog')->name('blog.')->group(function () {
-    // Listar todos os posts (não protegido pelo middleware)
     Route::get('/', [BlogController::class, 'index'])->name('index');
     Route::get('/{id}', [BlogController::class, 'show'])->name('show');
-
-    // Aplicar o middleware para as outras rotas
     Route::middleware(ValidateApiToken::class)->group(function () {
-        Route::delete('/delete', [BlogController::class, 'delete'])->name('delete');
-        Route::post('/', [BlogController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [BlogController::class, 'edit'])->name('edit');
+     // Listar todos os posts (não protegido pelo middleware)
+     Route::post('/update', [BlogController::class, 'update'])->name('update');
+     Route::post('/', [BlogController::class, 'store'])->name('store');
+     Route::delete('/delete', [BlogController::class, 'delete'])->name('delete');
+     Route::delete('/delete', [BlogController::class, 'delete'])->name('delete');
     });
 });
 

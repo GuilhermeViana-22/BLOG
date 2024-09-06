@@ -38,17 +38,12 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $userData = $request->validated();
-
-        try {
-            $response = $this->apiSgp->post('/register', $userData);
-
-            if ($response->successful()) {
-                return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
-            }
+        $response = $this->apiSgp->post('/register', $userData);
+        if (!$response->successful()) {
             return response()->json(['message' => 'Erro ao tentar registrar usuário.'], HttpHelper::HTTP_FORBIDDEN);
-        } catch (RequestException $e) {
-            return response()->json(['message' => 'Erro ao comunicar com a API externa.','error' => $e->getMessage()], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
         }
+        return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
+   
     }
 
     /**
@@ -121,7 +116,7 @@ class AuthController extends Controller
         $bearerToken = 'Bearer ' . $token->token;
 
         // Faz a requisição GET para o endpoint /me usando o APISGP
-        $response = $this->apiSgp->get('me', ['id' => $user_id], ['Authorization' => $bearerToken, ]);
+        $response = $this->apiSgp->get('me', ['id' => $user_id], ['Authorization' => $bearerToken,]);
 
         if ($response->successful()) {
             return response()->json($response->json(), HttpHelper::HTTP_OK);
@@ -157,7 +152,6 @@ class AuthController extends Controller
 
             DB::commit();
             return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -266,7 +260,7 @@ class AuthController extends Controller
         $response = Http::withOptions([
             'verify' => false, // Desativa a verificação SSL
         ])->get('https://apisgp.com/api/teste');
-    
+
         if ($response->successful()) {
             return response()->json($response->json(), HttpHelper::HTTP_OK);
         } else {

@@ -81,7 +81,7 @@ class APISGP
     {
         // Garante que o endpoint comece com uma barra, mas sem duplicar barras na URL final
         $url = $this->baseUrl . ltrim($endpoint, '/');
-    
+  
         Log::info("Sending {$method} request to {$url}", ['data' => $data, 'headers' => $headers]);
     
           // Verifica o APP_URL e decide se deve desativar a verificação SSL
@@ -92,7 +92,6 @@ class APISGP
             $response = Http::withOptions([
                 'verify' => $verifySsl, // Desativa a verificação SSL
             ])->withHeaders($headers)->{$method}($url, $data);
-    
             Log::info("Response received", ['body' => $response->body()]);
             return $response;
         } catch (RequestException $e) {
