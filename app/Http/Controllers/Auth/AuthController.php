@@ -260,5 +260,17 @@ class AuthController extends Controller
         }
     }
 
-
+    public function teste()
+    {
+        // Fazendo a requisição com Http facade e desativando o SSL
+        $response = Http::withOptions([
+            'verify' => false, // Desativa a verificação SSL
+        ])->get('https://apisgp.com/api/teste');
+    
+        if ($response->successful()) {
+            return response()->json($response->json(), HttpHelper::HTTP_OK);
+        } else {
+            return response()->json(['error' => 'Não foi possível se comunicar com a API externa.'], HttpHelper::HTTP_NOT_FOUND);
+        }
+    }
 }

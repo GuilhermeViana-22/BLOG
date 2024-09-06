@@ -81,19 +81,36 @@ class APISGP
     {
         // Garante que o endpoint comece com uma barra, mas sem duplicar barras na URL final
         $url = $this->baseUrl . ltrim($endpoint, '/');
-
+    
         Log::info("Sending {$method} request to {$url}", ['data' => $data, 'headers' => $headers]);
+    
+          // Verifica o APP_URL e decide se deve desativar a verificação SSL
+          $verifySsl = $this->shouldVerifySsl();
 
         try {
-            $response = Http::withHeaders($headers)->{$method}($url, $data);
+            // Adiciona a opção 'verify' => false para desativar a verificação SSL
+            $response = Http::withOptions([
+                'verify' => $verifySsl, // Desativa a verificação SSL
+            ])->withHeaders($headers)->{$method}($url, $data);
+    
             Log::info("Response received", ['body' => $response->body()]);
             return $response;
         } catch (RequestException $e) {
-
             // Registra o erro e lança a exceção
             Log::error("Request failed: {$e->getMessage()}", ['url' => $url, 'data' => $data]);
             throw $e;
         }
+    }
+    
+     /**
+     * Decide se a verificação SSL deve ser ativada ou desativada.
+     *
+     * @return bool
+     */
+    protected function shouldVerifySsl(): bool
+    {
+        $appUrl = env('APP_URL', ''); // Obtém o valor de APP_URL do arquivo .env
+        return $appUrl !== 'http://127.0.0.1:8000'; // Verifica se o APP_URL é diferente
     }
 
 }

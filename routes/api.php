@@ -12,6 +12,8 @@ Route::post('/verifycode', [AuthController::class, 'verifycode'])->name('verifyc
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/me', [AuthController::class, 'me'])->name('me');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/teste', [AuthController::class, 'teste'])->name('teste');
+
 
 Route::prefix('blog')->name('blog.')->group(function () {
     // Listar todos os posts (não protegido pelo middleware)
