@@ -39,11 +39,12 @@ class AuthController extends Controller
     {
         $userData = $request->validated();
         $response = $this->apiSgp->post('/register', $userData);
+
         if (!$response->successful()) {
-            return response()->json(['message' => 'Erro ao tentar registrar usuário.'], HttpHelper::HTTP_FORBIDDEN);
+            return response()->json(['message' => $response->json()], HttpHelper::HTTP_FORBIDDEN);
         }
         return response()->json(['message' => $response->json()], HttpHelper::HTTP_OK);
-   
+
     }
 
     /**
@@ -55,7 +56,6 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
         $response = $this->apiSgp->post('/login', $credentials);
-
         if (!$response->successful()) {
             return response()->json(['message' => 'Credenciais inválidas.'], HttpHelper::HTTP_NOT_FOUND);
         }
@@ -183,7 +183,7 @@ class AuthController extends Controller
         $user->created_at = $userDataFromApi['created_at'];
         $user->active =  (int)  $userDataFromApi['active'];
         $user->updated_at = $userDataFromApi['updated_at'];
-        $user->delete_at = $userDataFromApi['delete_at'];
+        $user->deleted_at = $userDataFromApi['deleted_at'] ?? null;
 
 
         return $user;

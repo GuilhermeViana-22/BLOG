@@ -81,26 +81,44 @@ class APISGP
     {
         // Garante que o endpoint comece com uma barra, mas sem duplicar barras na URL final
         $url = $this->baseUrl . ltrim($endpoint, '/');
-  
+
+        // Log dos dados da requisição
         Log::info("Sending {$method} request to {$url}", ['data' => $data, 'headers' => $headers]);
-    
-          // Verifica o APP_URL e decide se deve desativar a verificação SSL
-          $verifySsl = $this->shouldVerifySsl();
+
+        // Debug dos parâmetros iniciais
+//        dump("URL: {$url}");
+//        dump("Method: {$method}");
+//        dump("Data: ", $data);
+//        dump("Headers: ", $headers);
+
+        // Verifica o APP_URL e decide se deve desativar a verificação SSL
+        $verifySsl = $this->shouldVerifySsl();
 
         try {
             // Adiciona a opção 'verify' => false para desativar a verificação SSL
-            $response = Http::withOptions([
-                'verify' => $verifySsl, // Desativa a verificação SSL
-            ])->withHeaders($headers)->{$method}($url, $data);
+            $response = Http::withOptions(['verify' => $verifySsl])
+                ->withHeaders($headers)
+                ->{$method}($url, $data);
+
+            // Debug após o envio da requisição
+//            dump("Response Status: ", $response->status());
+//            dump("Response Body: ", $response->body());
+
+            // Log para armazenar o corpo da resposta no log
             Log::info("Response received", ['body' => $response->body()]);
+
             return $response;
         } catch (RequestException $e) {
-            // Registra o erro e lança a exceção
+            // Log do erro caso a requisição falhe
             Log::error("Request failed: {$e->getMessage()}", ['url' => $url, 'data' => $data]);
+
+            // Debug no caso de erro
+//            dump("Request Exception: {$e->getMessage()}");
+
             throw $e;
         }
     }
-    
+
      /**
      * Decide se a verificação SSL deve ser ativada ou desativada.
      *

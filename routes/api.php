@@ -29,9 +29,10 @@ Route::prefix('blog')->name('blog.')->group(function () {
 
 Route::prefix('categories')->name('categories.')->group(function () {
     //rotas publicas
-    Route::get('/', [CategoryController::class, 'index'])->name('index');
+
     //rotas protegidas
     Route::middleware(ValidateApiToken::class)->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::put('/{id}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');

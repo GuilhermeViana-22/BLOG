@@ -49,11 +49,11 @@ class ValidateApiToken
 
         try {
             // Faz a requisição POST e envia o corpo JSON
-            $response = $this->apiSgp->get('/autorizar', $data);
+            $response = $this->apiSgp->get('/teste', $data);
 
             // Verifica a resposta
             if (!$response->successful()) {
-                return response()->json(['error' => $response->json()], 401);
+                return response()->json(['error' => 'api não respondeu corretamente'.$response->json()], 401);
             }
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao se comunicar com a API - OU TOKEN NÃO ESTÁ MAIS VALIDO: ' . $e->getMessage()], 500);
