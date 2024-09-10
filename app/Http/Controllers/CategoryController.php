@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\HttpHelper;
+use App\Http\Requests\Categories\UpdateCategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -19,36 +21,28 @@ class CategoryController extends Controller
 
     /**
      * Atualiza uma categoria existente.
-     *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'relevant' => 'nullable|boolean',
-            'published' => 'nullable|date',
-            'parent_id' => 'nullable|exists:categories,id',
-        ]);
-
-        $category = Category::findOrFail($id);
-        $category->update($request->all());
-
-        return response()->json([
-            'message' => 'Categoria atualizada com sucesso!',
-            'category' => $category
-        ], Response::HTTP_OK);
+        try {
+            $category = Category::findOrFail($request->get('id'));
+            $category->update($request->all());
+            $this->actions('update', $request->get('user_id'), $category->name);
+            return $this->sucesso('update', 'Categoria atualizada com sucesso!');
+        } catch (\Exception $e) {
+            return $this->erro('update', $e);
+        }
     }
+
 
     /**
      * Armazena uma nova categoria.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function store(Request $request)
     {
@@ -73,7 +67,7 @@ class CategoryController extends Controller
      * Remove uma categoria.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function destroy($id)
     {
@@ -88,7 +82,7 @@ class CategoryController extends Controller
     /**
      * Atualiza o contador de relevância.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function incrementRelevant()
     {

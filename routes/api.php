@@ -33,9 +33,9 @@ Route::prefix('categories')->name('categories.')->group(function () {
     //rotas protegidas
     Route::middleware(ValidateApiToken::class)->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
-        Route::post('/', [CategoryController::class, 'store'])->name('store');
-        Route::put('/{id}', [CategoryController::class, 'update'])->name('update');
-        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+        Route::post('/store', [CategoryController::class, 'store'])->name('store');
+        Route::post('/update', [CategoryController::class, 'update'])->name('update');
+        Route::delete('delete', [CategoryController::class, 'delete'])->name('delete');
         Route::post('/increment-relevant', [CategoryController::class, 'incrementRelevant'])->name('incrementRelevant');
     });
 });

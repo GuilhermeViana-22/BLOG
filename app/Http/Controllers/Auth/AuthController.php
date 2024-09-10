@@ -4,19 +4,16 @@ namespace App\Http\Controllers\Auth;
 
 use App\Helpers\HttpHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\MeRequest;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\VerifyCodeRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\MeRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Models\Token;
 use App\Models\User;
 use App\Services\APISGP\APISGP;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Support\Facades\Http;
 use Mockery\Exception;
 

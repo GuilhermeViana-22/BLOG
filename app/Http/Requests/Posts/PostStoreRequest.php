@@ -1,10 +1,10 @@
 <?php
-namespace App\Http\Requests;
+namespace App\Http\Requests\Posts;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class PostUpdateRequest extends FormRequest
+class PostStoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,7 +14,6 @@ class PostUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required',
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255', // Se o subtítulo não for obrigatório
             'body' => 'required|string',
@@ -39,7 +38,6 @@ class PostUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id.required' => 'O id é obrigatório, para realiza-se alguma edição.',
             'title.required' => 'O título é obrigatório.',
             'title.string' => 'O título deve ser uma string.',
             'title.max' => 'O título não pode ter mais de 255 caracteres.',
