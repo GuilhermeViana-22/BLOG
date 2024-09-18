@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpHelper;
+use Mockery\Exception;
 use App\Models\Activity;
 use App\Models\FailedJob;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
+use App\Helpers\HttpHelper;
 use Illuminate\Support\Facades\Log;
-use Mockery\Exception;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
@@ -109,7 +109,7 @@ class Controller extends BaseController
         // Apenas a mensagem genérica é retornada na resposta
         return response()->json([
             'message' => $message,
-            'error' => $e->getMessage().'Detalhes adicionais não disponíveis.',
+            'error' => $e->getMessage(),
         ], HttpHelper::HTTP_INTERNAL_SERVER_ERROR);
     }
 

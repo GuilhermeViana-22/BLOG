@@ -42,12 +42,18 @@ Route::prefix('categories')->name('categories.')->group(function () {
 });
 
 Route::prefix('comment')->name('comment.')->group(function () {
-    //rotas protegidas
+    // Rotas protegidas
     Route::get('/', [CommentController::class, 'index'])->name('index');
     Route::middleware(ValidateApiToken::class)->group(function () {
         Route::post('/comentar', [CommentController::class, 'comentar'])->name('comentar');
-   });
+
+        // Adicionando rotas para editar, deletar e incrementar likes
+        Route::put('editarComentario', [CommentController::class, 'editarComentario'])->name('editar');
+        Route::delete('deletarComentario', [CommentController::class, 'deletarComentario'])->name('deletar');
+        Route::post('incrementarLikes', [CommentController::class, 'incrementarLikes'])->name('incrementarLikes');
+    });
 });
+
 
 //
 Route::post('/tags', [TagsController::class, 'store']);
