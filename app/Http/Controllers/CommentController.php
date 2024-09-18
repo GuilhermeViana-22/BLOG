@@ -2,65 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCommentRequest;
-use App\Http\Requests\UpdateCommentRequest;
+use App\Models\Post;
 use App\Models\Comment;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\StoreCommentRequest;
 class CommentController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCommentRequest $request)
+    public function comentar(StoreCommentRequest $request)
     {
-        //
+        // Validação dos dados
+        $data = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+            // Criação do comentário e vinculação ao post
+            $comment = new Comment();
+            $comment->fill($data);
+
+            // Certifica que o comentário está relacionado ao post
+            $post = Post::findOrFail($data['post_id']); // Lança um erro se o post não for encontrado
+            $post->comments()->save($comment);
+
+            DB::commit();
+
+            // Retorna uma resposta de sucesso
+            return $this->sucesso('create', 'Comentário adicionado com sucesso!');
+
+        } catch (\Exception $e) {
+            // Reverte a transação em caso de erro
+            DB::rollBack();
+
+            // Loga o erro (opcional)
+            Log::error('Erro ao salvar comentário: ' . $e->getMessage());
+
+            // Retorna uma resposta de erro
+            return $this->erro('create', $e);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Comment $comment)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Comment $comment)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCommentRequest $request, Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Comment $comment)
-    {
-        //
-    }
 }
