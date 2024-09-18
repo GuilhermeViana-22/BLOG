@@ -43,20 +43,28 @@ Route::prefix('categories')->name('categories.')->group(function () {
 });
 
 Route::prefix('comment')->name('comment.')->group(function () {
-    // Rotas protegidas
-    Route::get('/', [CommentController::class, 'index'])->name('index');
+    // Rotas protegidas para comentários
     Route::middleware(ValidateApiToken::class)->group(function () {
-        Route::post('/comentar', [CommentController::class, 'comentar'])->name('comentar');
+        Route::post('/', [CommentController::class, 'comentar'])->name('comentar'); // Criar comentário
 
-        // Adicionando rotas para editar, deletar e incrementar likes
-        Route::put('editarComentario', [CommentController::class, 'editarComentario'])->name('editar');
-        Route::delete('deletarComentario', [CommentController::class, 'deletarComentario'])->name('deletar');
-        Route::post('incrementarLikes', [CommentController::class, 'incrementarLikes'])->name('incrementarLikes');
+        // Editar e deletar comentários
+        Route::put('/{id}', [CommentController::class, 'editarComentario'])->name('editar'); // Editar comentário
+        Route::delete('/{id}', [CommentController::class, 'deletarComentario'])->name('deletar'); // Deletar comentário
+        Route::post('/{id}/likes', [CommentController::class, 'incrementarLikes'])->name('incrementarLikes'); // Incrementar likes
     });
+
+    // Rota pública para listar comentários (se necessário)
+    Route::get('/', [CommentController::class, 'index'])->name('index');
 });
 
+Route::prefix('tags')->name('tags.')->group(function () {
+    // Rotas protegidas para tags
+    Route::middleware(ValidateApiToken::class)->group(function () {
+        Route::post('/', [TagsController::class, 'store'])->name('store'); // Criar tag
+        Route::get('/search', [TagsController::class, 'show'])->name('show'); // Buscar tags
 
-//
-Route::post('/tags', [TagsController::class, 'store']);
-
-
+        // Editar e deletar tags
+        Route::put('/{tag}', [TagsController::class, 'edit'])->name('edit'); // Editar tag
+        Route::delete('/{tag}', [TagsController::class, 'destroy'])->name('destroy'); // Deletar tag
+    });
+});

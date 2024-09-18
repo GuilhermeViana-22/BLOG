@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreTagsRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-class TagController extends Controller
+class TagsController extends Controller
 {
     /**
      * Store a newly created resource in storage.
