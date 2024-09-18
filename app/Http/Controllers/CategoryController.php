@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpHelper;
-use App\Http\Requests\Categories\UpdateCategoryRequest;
 use App\Models\Category;
-use Illuminate\Http\JsonResponse;
+use App\Helpers\HttpHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Categories\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
@@ -65,7 +65,6 @@ class CategoryController extends Controller
 
     /**
      * Remove uma categoria.
-     *
      * @param  int  $id
      * @return JsonResponse
      */
@@ -81,7 +80,6 @@ class CategoryController extends Controller
 
     /**
      * Atualiza o contador de relevância.
-     *
      * @return JsonResponse
      */
     public function incrementRelevant()
