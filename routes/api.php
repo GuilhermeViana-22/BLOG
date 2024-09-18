@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TagsController;
+
 use App\Http\Middleware\ValidateApiToken;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CategoryController;

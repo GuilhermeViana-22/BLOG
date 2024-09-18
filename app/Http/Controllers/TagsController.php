@@ -2,30 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTagsRequest;
-use App\Http\Requests\UpdateTagsRequest;
 use App\Models\Tag;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Response;
+use App\Http\Requests\StoreTagsRequest;
+use Symfony\Component\HttpFoundation\Response;
 
-class TagsController extends Controller
+class TagController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -53,43 +37,55 @@ class TagsController extends Controller
         } catch (\Exception $e) {
             Log::error('Erro ao salvar a tag: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Erro ao tentar salvar o post.',
+                'message' => 'Erro ao tentar salvar a tag.',
                 'error' => 'Erro ao salvar a tag.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-
-
     /**
      * Display the specified resource.
      */
-    public function show(Tag $tags)
+    public function show(Request $request)
     {
+        $search = $request->query('search', '');
 
+        // Encontra tags pelo nome similar
+        $tags = Tag::where('name', 'like', "%{$search}%")->get();
+
+        return response()->json([
+            'data' => $tags
+        ], Response::HTTP_OK);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Tag $tags)
+    public function edit(Tag $tag)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateTagsRequest $request, Tag $tags)
-    {
-        //
+        // Aqui você pode retornar uma visualização ou JSON com os detalhes da tag para edição
+        return response()->json([
+            'data' => $tag
+        ], Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tag $tags)
+    public function destroy(Tag $tag)
     {
-        //
+        try {
+            // Remove a tag do banco de dados
+            $tag->delete();
+            return response()->json([
+                'message' => 'Tag deletada com sucesso!'
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            Log::error('Erro ao deletar a tag: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erro ao tentar deletar a tag.',
+                'error' => 'Erro ao deletar a tag.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
