@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('subtitle')->nullable();
             $table->longText('body');
             $table->string('footer')->nullable();
-            $table->string('links')->nullable();
-            $table->string('tags_id'); // #por exemplo : #php, #aravel
+            $table->text('links')->nullable()->change();
+            $table->text('tags_id')->nullable()->change();
             $table->string('image_url')->nullable();
             $table->integer('user_id');
             $table->integer('category_id');

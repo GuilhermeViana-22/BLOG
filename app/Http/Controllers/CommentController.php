@@ -10,7 +10,7 @@ use App\Http\Requests\StoreCommentRequest;
 class CommentController extends Controller
 {
     /**
-     * Store a newly created resource in storage.
+     *Store a newly created resource in storage.
      */
     public function comentar(StoreCommentRequest $request)
     {
@@ -20,14 +20,20 @@ class CommentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Criação do comentário e vinculação ao post
+            // Criação do comentário
             $comment = new Comment();
             $comment->fill($data);
 
             // Certifica que o comentário está relacionado ao post
             $post = Post::findOrFail($data['post_id']); // Lança um erro se o post não for encontrado
-            $post->comments()->save($comment);
 
+            // Associa o comentário ao post
+            $comment->post()->associate($post);
+
+            // Salva o comentário na tabela de comentários
+            $comment->save();
+
+            // Confirma a transação
             DB::commit();
 
             // Retorna uma resposta de sucesso
@@ -44,7 +50,5 @@ class CommentController extends Controller
             return $this->erro('create', $e);
         }
     }
-
-
 
 }

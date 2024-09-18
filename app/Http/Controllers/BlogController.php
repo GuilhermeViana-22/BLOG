@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HttpHelper;
-use App\Http\Requests\Posts\DeletePostRequest;
-use App\Http\Requests\Posts\PostStoreRequest;
-use App\Http\Requests\Posts\PostUpdateRequest;
-use App\Models\Activity;
 use App\Models\Post;
-use Illuminate\Database\QueryException;
+use App\Models\Activity;
+use App\Helpers\HttpHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\Posts\PostStoreRequest;
+use App\Http\Requests\Posts\DeletePostRequest;
+use App\Http\Requests\Posts\PostUpdateRequest;
 
 class BlogController extends Controller
 {

@@ -16,7 +16,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/teste', [AuthController::class, 'teste'])->name('teste');
 
 
-Route::prefix('blog')->name('blog.')->group(function () {
+Route::prefix('post')->name('post.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
     Route::get('/{id}', [BlogController::class, 'show'])->name('show');
     Route::middleware(ValidateApiToken::class)->group(function () {

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Post extends Model
 {
@@ -18,13 +18,17 @@ class Post extends Model
         'footer',
         'links',
         'tags_id',
-        'comment_id',
         'image_url',
         'user_id',
         'category_id',
         'type_id',
         'can_be_commented',
-        'published',
+    ];
+
+    protected $casts = [
+        'links' => 'array',
+        'tags_id' => 'array',
+        'can_be_commented' => 'boolean',
     ];
 
     /**

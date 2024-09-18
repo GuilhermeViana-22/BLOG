@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Http\Requests\Posts;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 class PostStoreRequest extends FormRequest
 {
@@ -15,18 +16,19 @@ class PostStoreRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255', // Se o subtítulo não for obrigatório
+            'subtitle' => 'nullable|string|max:255',
             'body' => 'required|string',
             'footer' => 'nullable|string',
-            'links' => 'nullable|string',
-            'tags_id' => 'required|string', // Se for uma lista de IDs separados por vírgulas
-            'image_url' => 'nullable|url', // Valida a URL da imagem
+            'links' => 'nullable|array',
+            'links.*.title' => 'nullable|string|max:255',
+            'links.*.url' => 'nullable|url',
+            'tags_id' => 'nullable|array',
+            'tags_id.*' => 'integer|exists:tags,id',
+            'image_url' => 'nullable|url',
             'user_id' => 'required|integer',
             'category_id' => 'required|integer',
-            'type_id' => 'required|integer', // Supondo que tenha uma tabela types
+            'type_id' => 'required|integer',
             'can_be_commented' => 'nullable|boolean',
-            'created_at' => 'nullable|date', // Se não precisar validar, pode remover
-            'updated_at' => 'nullable|date', // Se não precisar validar, pode remover
         ];
     }
 
@@ -50,23 +52,27 @@ class PostStoreRequest extends FormRequest
 
             'footer.string' => 'O rodapé deve ser uma string.',
 
-            'links.string' => 'Os links devem ser uma string.',
+            'links.array' => 'Os links devem ser uma array.',
+            'links.*.title.string' => 'O título do link deve ser uma string.',
+            'links.*.title.max' => 'O título do link não pode ter mais de 255 caracteres.',
+            'links.*.url.url' => 'A URL do link deve ser uma URL válida.',
 
-            'tags_id.string' => 'Os IDs das tags devem ser uma string.',
-
+            'tags_id.array' => 'Os IDs das tags devem ser uma array.',
+            'tags_id.*.integer' => 'Cada ID de tag deve ser um número inteiro.',
+            'tags_id.*.exists' => 'O ID da tag deve existir.',
 
             'image_url.url' => 'A URL da imagem deve ser uma URL válida.',
 
             'user_id.required' => 'O ID do usuário é obrigatório.',
-
+            'user_id.integer' => 'O ID do usuário deve ser um número inteiro.',
 
             'category_id.required' => 'O ID da categoria é obrigatório.',
             'category_id.integer' => 'O ID da categoria deve ser um número inteiro.',
 
+            'type_id.required' => 'O ID do tipo é obrigatório.',
+            'type_id.integer' => 'O ID do tipo deve ser um número inteiro.',
 
-
-
-
+            'can_be_commented.boolean' => 'O campo "pode ser comentado" deve ser um valor booleano.',
         ];
     }
 }
