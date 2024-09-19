@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use app\Services\OpenAI\OpenAIService;
-use app\Http\Resquests\generateTextRequest;
+use App\Services\OpenAIService;
+use App\Http\Requests\generateTextRequest;
+
 
 class OpenAIController extends Controller
 {
@@ -19,6 +20,7 @@ class OpenAIController extends Controller
     {
 
         $prompt = $request->input('prompt');
+
         $generatedText = $this->openAIService->generateText($prompt);
 
         return response()->json([
