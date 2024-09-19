@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TagsController;
 
 use App\Http\Middleware\ValidateApiToken;
+use App\Http\Controllers\OpenAIController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Auth\AuthController;
@@ -16,6 +17,10 @@ Route::get('/me', [AuthController::class, 'me'])->name('me');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/teste', [AuthController::class, 'teste'])->name('teste');
 
+
+
+//teste de gerador de texto:
+Route::post('/generate', [OpenAIController::class, 'generateText']);
 
 Route::prefix('post')->name('post.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
