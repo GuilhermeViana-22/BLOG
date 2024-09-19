@@ -6,19 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateUserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
 
-    public function authorize()
-    {
-        // Autorizar se o usuário estiver autenticado
-        return true;
-    }
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -31,12 +20,9 @@ class UpdateUserRequest extends FormRequest
             'user_id' => 'required',
             'name' => 'required|string|max:255',
             'situacao_id' => 'required|integer',
-            'active' => 'required|integer',
-            'email' => 'required|email|unique:users,email,' . $this->user->id,
-            'password' => 'nullable|string|min:6|confirmed',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'location' => 'nullable|string|max:255',
-            'about_me' => 'nullable|string',
+            'photo' => 'nullable|string', // Valida que photo é uma string (base64)
+            'location' => 'required|string|max:255',
+            'about_me' => 'required|string',
             'website' => 'nullable|url',
             'instagram' => 'nullable|url',
             'github' => 'nullable|url',
@@ -66,15 +52,6 @@ class UpdateUserRequest extends FormRequest
             'situacao_id.integer' => 'A situação deve ser um número inteiro.',
             'active.required' => 'O status é obrigatório.',
             'active.integer' => 'O status deve ser um número inteiro.',
-            'email.required' => 'O email é obrigatório.',
-            'email.email' => 'O email deve ser um endereço de email válido.',
-            'email.unique' => 'O email já está em uso.',
-            'password.string' => 'A senha deve ser uma string.',
-            'password.min' => 'A senha deve ter pelo menos 6 caracteres.',
-            'password.confirmed' => 'A confirmação da senha não corresponde.',
-            'photo.image' => 'O arquivo deve ser uma imagem.',
-            'photo.mimes' => 'A imagem deve ser nos formatos jpeg, png, jpg, ou gif.',
-            'photo.max' => 'A imagem não pode ter mais de 2048 kilobytes.',
             'location.string' => 'A localização deve ser uma string.',
             'location.max' => 'A localização não pode ter mais de 255 caracteres.',
             'website.url' => 'O link do site deve ser uma URL válida.',

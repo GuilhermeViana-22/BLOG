@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use \Log;
+use \Exception;
+use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Helpers\StorageHelper;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateUserRequest;
 
 
@@ -13,45 +19,46 @@ class UserController extends Controller
      * método de busca de usuarios
      */
     public function index(){
+       return response()->json('due good');
 
     }
 
-
-
-    /**
-     * Atualiza os dados do usuário.
+   /**
+     * Atualiza a foto do usuário.
      *
-     * @param  \App\Http\Requests\UpdateUserRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function atualizar(UpdateUserRequest $request)
+    public function update(UpdateUserRequest $request)
     {
-        $user = User::findOrFail($request->route('user_id'));
+        $user = User::findOrFail($request->get('user_id'));
 
-        // Atualizar a senha se fornecida
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->input('password'));
+        // Se não tiver foto, apenas atualiza os outros dados
+        if (!$request->has('photo')) {
+            $user->fill($request->validated());
+            $user->save();
+
+            return response()->json(['message' => 'Dados atualizados com sucesso.']);
         }
 
-        // Atualizar a foto se fornecida
-        if ($request->hasFile('photo')) {
-            if ($user->photo && Storage::exists('public/' . $user->photo)) {
-                Storage::delete('public/' . $user->photo);
+        // Atualiza os outros dados também, se houver
+        $user->fill($request->validated());
+
+        // Se houver uma nova foto, salva e atualiza o campo
+        if ($request->has('photo')) {
+            try {
+                $user->photo = StorageHelper::salvar($request->get('photo'), User::STORAGE_PATH . $user->id);
+                $user->save(); // Salva o usuário após atualizar a foto
+                return response()->json(['message' => 'Foto e dados atualizados com sucesso.']);
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Erro ao atualizar a foto: ' . $e->getMessage()], 500);
             }
-
-            $photo = $request->file('photo');
-            $photoPath = $photo->store('photos', 'public');
-            $user->photo = $photoPath;
         }
 
-        // Atualizar os dados usando mass assignment
-        $user->fill($request->except(['password', 'photo']));
-
-        // Salvar as alterações
-        $user->save();
-
-        return response()->json(['message' => 'Usuário atualizado com sucesso.']);
     }
+
+
+
 
 
 }
