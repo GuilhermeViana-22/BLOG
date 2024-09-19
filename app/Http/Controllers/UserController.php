@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Helpers\StorageHelper;
+use App\Http\Resources\UserResource;
+use App\Http\Requests\ProfileRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateUserRequest;
 
@@ -21,6 +23,30 @@ class UserController extends Controller
     public function index(){
        return response()->json('due good');
 
+    }
+
+    /**
+     * profile
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function profile(ProfileRequest $request)
+    {
+        // Busca o usuário pelo ID fornecido na requisição
+        $user = User::findOrFail($request->get('user_id'));
+
+        // Transformar a foto em Base64
+        if ($user->photo) {
+            $path = Storage::path('public/' . User::STORAGE_PATH . $user->id . '/' . $user->photo);
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            $user->photo = $base64;
+        }
+
+        // Retorna os dados do usuário em formato de coleção
+        return new UserResource($user);
     }
 
    /**
@@ -54,7 +80,6 @@ class UserController extends Controller
                 return response()->json(['error' => 'Erro ao atualizar a foto: ' . $e->getMessage()], 500);
             }
         }
-
     }
 
 

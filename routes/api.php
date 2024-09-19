@@ -83,6 +83,7 @@ Route::prefix('tags')->name('tags.')->group(function () {
 Route::prefix('user')->name('user.')->group(function () {
     //rotas publicas
     Route::get('/', [UserController::class, 'index'])->name('index');
+    Route::get('/profile', [UserController::class, 'profile'])->name('.profile');
     Route::post('/update', [UserController::class, 'update'])->name('.update');
     Route::delete('delete', [UserController::class, 'delete'])->name('.delete');
     //rotas protegidas
