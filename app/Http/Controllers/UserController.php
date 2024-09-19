@@ -13,8 +13,6 @@ use App\Http\Requests\ProfileRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateUserRequest;
 
-
-
 class UserController extends Controller
 {
     /**
@@ -81,9 +79,4 @@ class UserController extends Controller
             }
         }
     }
-
-
-
-
-
 }
